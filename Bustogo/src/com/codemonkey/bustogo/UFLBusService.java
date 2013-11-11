@@ -464,7 +464,8 @@ public class UFLBusService extends IntentService{
 				} else {
 					etaItem = routeToArrival.get(routeId);
 				}
-				etaItem.addTime(""+(arrivals.getJSONObject(count).getInt("timestamp") - sysTime));
+				double time = Math.ceil((arrivals.getJSONObject(count).getInt("timestamp") - sysTime) / 60 );
+				etaItem.addTime(""+time);
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
