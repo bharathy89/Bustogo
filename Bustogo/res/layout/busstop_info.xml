@@ -2,91 +2,92 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:background="@drawable/infowindow1" >
-    
+    android:background="@drawable/infowindow1"
+    android:orientation="vertical" >
+
     <LinearLayout
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="5dp" >
-        
-        <TextView 
+
+        <TextView
             android:id="@+id/stopCode"
             android:layout_width="75dp"
             android:layout_height="wrap_content"
-            android:text="1330"
             android:layout_gravity="center"
+            android:layout_margin="1dp"
             android:gravity="center"
+            android:text="1330"
             android:textColor="#797979"
             android:textSize="20sp"
-            android:layout_margin="1dp"
-            android:textStyle="bold"
-            />
-        <View android:layout_width="1dp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="1dp"
             android:layout_height="match_parent"
+            android:layout_gravity="center"
             android:layout_margin="1dp"
-            android:background="#a1a1a1"
-            android:layout_gravity="center"/>
-        
+            android:background="#a1a1a1" />
+
         <TextView
-            android:id="@+id/stopName" 
+            android:id="@+id/stopName"
             android:layout_width="210dp"
             android:layout_height="wrap_content"
-            android:text="Stoneridge Appartments and time"
-            android:gravity="center"
-            android:textSize="17sp"
-            android:textColor="#333333"
             android:layout_gravity="center"
-            android:textStyle="bold"
             android:layout_margin="1dp"
-            />
-        
+            android:gravity="center"
+            android:text="Stoneridge Appartments and time"
+            android:textColor="#333333"
+            android:textSize="17sp"
+            android:textStyle="bold" />
     </LinearLayout>
-    
-     <View android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#a1a1a1"
-            android:layout_marginLeft="2dp"
-            android:layout_marginRight="2dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginLeft="2dp"
+        android:layout_marginRight="2dp"
+        android:background="#a1a1a1" />
 
     <LinearLayout
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="5dp" 
-       >
-        
-        <TextView android:layout_width="0dp"
+        android:padding="5dp" >
+
+        <TextView
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Now Serviced By"
             android:layout_weight="1"
+            android:gravity="left"
+            android:text="Now Serviced By"
             android:textColor="#333333"
             android:textSize="15dp"
-            android:textStyle="bold"
-            android:gravity="left"
-            />
-        <TextView android:layout_width="0dp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Arrival Time"
             android:layout_weight="1"
-            android:textSize="15sp"
-            android:textColor="#333333"
-            android:textStyle="bold"
             android:gravity="right"
-            />
+            android:text="Arrival Time"
+            android:textColor="#333333"
+            android:textSize="15sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
-    <View android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#a1a1a1"
-            android:layout_marginLeft="2dp"
-            android:layout_marginRight="2dp"/>
-    
-    <LinearLayout android:id="@+id/infoLayout"
+    <View
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical" >
-        
-    </LinearLayout>
+        android:layout_height="1dp"
+        android:layout_marginLeft="2dp"
+        android:layout_marginRight="2dp"
+        android:background="#a1a1a1" />
+
+    <ListView
+        android:id="@+id/active_route_list"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
+    </ListView>
+
 </LinearLayout>

@@ -32,6 +32,7 @@ import android.util.Log;
 
 import com.codemonkey.bustogo.objects.Bus;
 import com.codemonkey.bustogo.objects.BusStop;
+import com.codemonkey.bustogo.objects.ETAItem;
 import com.codemonkey.bustogo.objects.Route;
 import com.codemonkey.bustogo.objects.Segment;
 import com.google.android.gms.maps.model.LatLng;
@@ -425,7 +426,7 @@ public class UFLBusService extends IntentService{
 	    timer.schedule(doAsynchronousTask, 0, announcementInterval);
 	}
 	
-	public static HashMap<Integer, Integer> getETA(int stopId) {
+	public static HashMap<Integer, ETAItem> getETA(int stopId) {
 		HttpResponse response;
 		try {
 			response = makeRequest("http://feeds.transloc.com/mobile/2/arrivals?agencies="+agency+"&stop_id="+stopId);
@@ -446,14 +447,24 @@ public class UFLBusService extends IntentService{
 		return null;
 	}
 	
-	public static HashMap<Integer, Integer> addETA(JSONArray arrivals) {
-		HashMap<Integer, Integer> routeToArrival = new HashMap<Integer, Integer>();
+	public static HashMap<Integer, ETAItem> addETA(JSONArray arrivals) {
+		HashMap<Integer, ETAItem> routeToArrival = new HashMap<Integer, ETAItem>();
 		int count =0;
 		long sysTime = System.currentTimeMillis();
 		while(count < arrivals.length()) {
 			try {
-				routeToArrival.put(arrivals.getJSONObject(count).getInt("route_id"), 
-					(int)(arrivals.getJSONObject(count).getInt("timestamp") - sysTime));
+				ETAItem etaItem;
+				int routeId = arrivals.getJSONObject(count).getInt("route_id");
+				if(routeToArrival.get(routeId) == null) {
+					etaItem = new ETAItem();
+					etaItem.setRouteShortName(allRoutes.get(routeId).getShortName());
+					etaItem.setRouteName(allRoutes.get(routeId).getLongName());
+					etaItem.setColor(allRoutes.get(routeId).getColor());
+					routeToArrival.put(routeId, etaItem);
+				} else {
+					etaItem = routeToArrival.get(routeId);
+				}
+				etaItem.addTime(""+(arrivals.getJSONObject(count).getInt("timestamp") - sysTime));
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

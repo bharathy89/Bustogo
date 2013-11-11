@@ -5,17 +5,8 @@ package com.codemonkey.bustogo;
  * 	Free for modification and distribution
  */
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -25,6 +16,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.OvalShape;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.AsyncTask;
@@ -34,13 +27,15 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.util.DisplayMetrics;
-import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -53,6 +48,7 @@ import android.widget.Toast;
 
 import com.codemonkey.bustogo.objects.Bus;
 import com.codemonkey.bustogo.objects.BusStop;
+import com.codemonkey.bustogo.objects.ETAItem;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
@@ -257,17 +253,17 @@ public class MainActivity extends Activity{
 					String[] value = stopStr.split(" ");
 					final BusStop stop = UFLBusService.busStops.get(Integer.parseInt(value[1]));
 
-					AsyncTask fetchETA = new AsyncTask< Object, Void, HashMap<Integer, Integer> >(){
+					AsyncTask fetchETA = new AsyncTask< Object, Void, HashMap<Integer, ETAItem> >(){
 
 						@Override
-						protected void onPostExecute(HashMap<Integer, Integer> result) {
+						protected void onPostExecute(HashMap<Integer, ETAItem> result) {
 							map.setInfoWindowAdapter(new BusStopInfoWindowAdapter(stop, result));
 						}
 
 						@Override
-						protected HashMap<Integer, Integer> doInBackground(
+						protected HashMap<Integer, ETAItem> doInBackground(
 								Object... params) {
-							HashMap<Integer, Integer> result = UFLBusService.getETA(stop.getId());
+							HashMap<Integer, ETAItem> result = UFLBusService.getETA(stop.getId());
 							return result;
 						}
 
@@ -387,22 +383,25 @@ public class MainActivity extends Activity{
 		super.onBackPressed();
 		finish();
 	}
+
 	
 	class BusStopInfoWindowAdapter implements InfoWindowAdapter {
 		
 		private View view;
 		private TextView stopCode;
 		private TextView stopName;
-		private LinearLayout infoLayout;
+		private ListView infoList;
 		private BusStop stop;
-		private HashMap<Integer, Integer> result;
+		private HashMap<Integer, ETAItem> result;
+		private ETAAdapter arrayPop = new ETAAdapter(MainActivity.this,R.layout.infowindow_listitem );
 
-		public BusStopInfoWindowAdapter(BusStop stop, HashMap<Integer, Integer> result) {
+		public BusStopInfoWindowAdapter(BusStop stop, HashMap<Integer, ETAItem> result) {
 			view = getLayoutInflater().inflate(R.layout.busstop_info,
 					null);
 			stopCode = (TextView) view.findViewById(R.id.stopCode);
 			stopName = (TextView) view.findViewById(R.id.stopName);
-			infoLayout = (LinearLayout) view.findViewById(R.id.infoLayout);
+			infoList = (ListView) view.findViewById(R.id.active_route_list);
+			infoList.setAdapter(arrayPop);
 			this.stop = stop;
 			this.result = result;
 		}
@@ -415,12 +414,13 @@ public class MainActivity extends Activity{
 		@Override
 		public View getInfoWindow(final Marker marker) {
 			// TODO Auto-generated method stub
-
+			arrayPop.clear();
 			if( result != null) {
-				for(int x : result.keySet()) {
-					TextView addItem = new TextView(MainActivity.this);
-					addItem.setText("route : "+x+" time : "+result.get(x));
-					infoLayout.addView(addItem);
+				for(ETAItem x : result.values()) {
+					
+					//addItem.setText("route : "+x+" time : "+result.get(x));
+					//infoLayout.addView(addItem);
+					arrayPop.add(x);
 				}
 			}
 
@@ -432,6 +432,34 @@ public class MainActivity extends Activity{
 		}
 		
 	}
+	
+	class ETAAdapter extends ArrayAdapter<ETAItem> {
+		public ETAAdapter(Context context, int resource) {
+			super(context, resource);
+			// TODO Auto-generated constructor stub
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			ViewGroup listItem;
+			if(convertView == null)
+			{
+				LayoutInflater inflater = (LayoutInflater)getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+				listItem = (ViewGroup) inflater.inflate(R.layout.infowindow_listitem, null, false);
+			}
+			else
+			{
+				listItem = (ViewGroup) convertView;
+			}
+			ETAItem etaItem = getItem(position);
+			TextView color = ((TextView)listItem.findViewById(R.id.color));
+			color.setBackgroundColor(etaItem.getColor());
+			color.setText(""+etaItem.getRouteShortName());
+			((TextView)listItem.findViewById(R.id.routeName)).setText(etaItem.getRouteName());
+			((TextView)listItem.findViewById(R.id.timeText)).setText(etaItem.getETA());
+			return listItem;
+		}
+	};
 	
 }
 
