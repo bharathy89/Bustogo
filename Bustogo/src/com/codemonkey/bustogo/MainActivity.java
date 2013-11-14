@@ -33,7 +33,6 @@ import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -51,6 +50,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
 import com.google.android.gms.maps.GoogleMap.OnCameraChangeListener;
+import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -184,7 +184,7 @@ public class MainActivity extends Activity{
 	protected void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_layer_stack);
+		setContentView(R.layout.activity_main);
 		gps = new GPSTracker(MainActivity.this);
 		//Initialize
 		metrics = new DisplayMetrics();
@@ -245,17 +245,19 @@ public class MainActivity extends Activity{
 		map.setOnMarkerClickListener(new OnMarkerClickListener() {
 			
 			@Override
-			public boolean onMarkerClick(Marker marker) {
+			public boolean onMarkerClick(final Marker marker) {
 				String stopStr = marker.getTitle();
 				if(stopStr.startsWith("Stop")) {
 					String[] value = stopStr.split(" ");
+					
 					final BusStop stop = UFLBusService.busStops.get(Integer.parseInt(value[1]));
-
+					map.setInfoWindowAdapter(new BusStopInfoWindowAdapter(stop, null));
 					AsyncTask fetchETA = new AsyncTask< Object, Void, HashMap<Integer, ETAItem> >(){
 
 						@Override
 						protected void onPostExecute(HashMap<Integer, ETAItem> result) {
 							map.setInfoWindowAdapter(new BusStopInfoWindowAdapter(stop, result));
+							marker.showInfoWindow();
 						}
 
 						@Override
@@ -270,6 +272,16 @@ public class MainActivity extends Activity{
 				}
 				return false;
 			}
+		});
+		
+		map.setOnInfoWindowClickListener(new OnInfoWindowClickListener() {
+
+			@Override
+			public void onInfoWindowClick(Marker arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
 		});
 
 		findMyLoc = (ImageButton) findViewById(R.id.findMyLoc);
@@ -385,21 +397,18 @@ public class MainActivity extends Activity{
 	
 	class BusStopInfoWindowAdapter implements InfoWindowAdapter {
 		
-		private View view;
+		private LinearLayout view;
 		private TextView stopCode;
 		private TextView stopName;
-		private ListView infoList;
 		private BusStop stop;
 		private HashMap<Integer, ETAItem> result;
-		private ETAAdapter arrayPop = new ETAAdapter(MainActivity.this,R.layout.infowindow_listitem );
-
+		private boolean more= false;
+		
 		public BusStopInfoWindowAdapter(BusStop stop, HashMap<Integer, ETAItem> result) {
-			view = getLayoutInflater().inflate(R.layout.busstop_info,
+			view = (LinearLayout)getLayoutInflater().inflate(R.layout.busstop_info,
 					null);
 			stopCode = (TextView) view.findViewById(R.id.stopCode);
 			stopName = (TextView) view.findViewById(R.id.stopName);
-			infoList = (ListView) view.findViewById(R.id.active_route_list);
-			infoList.setAdapter(arrayPop);
 			this.stop = stop;
 			this.result = result;
 		}
@@ -412,13 +421,30 @@ public class MainActivity extends Activity{
 		@Override
 		public View getInfoWindow(final Marker marker) {
 			// TODO Auto-generated method stub
-			arrayPop.clear();
 			if( result != null) {
-				for(ETAItem x : result.values()) {
-					
+				int count = 0;
+				for(ETAItem etaItem : result.values()) {
+					if(count >= 4) {
+						break;
+					}
 					//addItem.setText("route : "+x+" time : "+result.get(x));
 					//infoLayout.addView(addItem);
-					arrayPop.add(x);
+					LayoutInflater inflater = (LayoutInflater)getLayoutInflater();
+					ViewGroup listItem = (ViewGroup) inflater.inflate(R.layout.infowindow_listitem, null, false);
+					TextView color = ((TextView)listItem.findViewById(R.id.color));
+					color.setBackgroundColor(etaItem.getColor());
+					color.setText(""+etaItem.getRouteShortName());
+					((TextView)listItem.findViewById(R.id.routeName)).setText(etaItem.getRouteName());
+					((TextView)listItem.findViewById(R.id.timeText)).setText(etaItem.getETA());
+					view.addView(listItem);
+					count++;
+				}
+				if(result.size() >= 4) {
+					TextView moreBuses = new TextView(view.getContext());
+					moreBuses.setText("click for more Buses");
+					moreBuses.setTextColor(0xff333333);
+					more = true;
+					view.addView(moreBuses);
 				}
 			}
 
@@ -431,33 +457,33 @@ public class MainActivity extends Activity{
 		
 	}
 	
-	class ETAAdapter extends ArrayAdapter<ETAItem> {
-		public ETAAdapter(Context context, int resource) {
-			super(context, resource);
-			// TODO Auto-generated constructor stub
-		}
-
-		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			ViewGroup listItem;
-			if(convertView == null)
-			{
-				LayoutInflater inflater = (LayoutInflater)getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-				listItem = (ViewGroup) inflater.inflate(R.layout.infowindow_listitem, null, false);
-			}
-			else
-			{
-				listItem = (ViewGroup) convertView;
-			}
-			ETAItem etaItem = getItem(position);
-			TextView color = ((TextView)listItem.findViewById(R.id.color));
-			color.setBackgroundColor(etaItem.getColor());
-			color.setText(""+etaItem.getRouteShortName());
-			((TextView)listItem.findViewById(R.id.routeName)).setText(etaItem.getRouteName());
-			((TextView)listItem.findViewById(R.id.timeText)).setText(etaItem.getETA());
-			return listItem;
-		}
-	};
+//	class ETAAdapter extends ArrayAdapter<ETAItem> {
+//		public ETAAdapter(Context context, int resource) {
+//			super(context, resource);
+//			// TODO Auto-generated constructor stub
+//		}
+//
+//		@Override
+//		public View getView(int position, View convertView, ViewGroup parent) {
+//			ViewGroup listItem;
+//			if(convertView == null)
+//			{
+//				LayoutInflater inflater = (LayoutInflater)getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//				listItem = (ViewGroup) inflater.inflate(R.layout.infowindow_listitem, null, false);
+//			}
+//			else
+//			{
+//				listItem = (ViewGroup) convertView;
+//			}
+//			ETAItem etaItem = getItem(position);
+//			TextView color = ((TextView)listItem.findViewById(R.id.color));
+//			color.setBackgroundColor(etaItem.getColor());
+//			color.setText(""+etaItem.getRouteShortName());
+//			((TextView)listItem.findViewById(R.id.routeName)).setText(etaItem.getRouteName());
+//			((TextView)listItem.findViewById(R.id.timeText)).setText(etaItem.getETA());
+//			return listItem;
+//		}
+//	};
 	
 }
 

@@ -1,21 +1,39 @@
 package com.codemonkey.bustogo.objects;
 
+import java.util.TreeSet;
+
 public class ETAItem {
 		private String routeShortName;
 		private String routeName;
-		private String time="";
+		private TreeSet<Integer> times =  new TreeSet<Integer>();
 		private int color;
 		
-		public void addTime(String str) {
-			if(time.equals("")) {
-				time = time + str;
-			} else {
-				time = time +" and " +str;
-			}
+		public void addTime(int time) {
+			times.add(time);
 		}
 		
 		public String getETA() {
-			return time+" mins";
+			String result = "";
+			int count = 0;
+			
+			Integer[] timeArray = new Integer [times.size()];
+			times.toArray(timeArray);
+			if(times.size() > 0) {
+				result = timeArray[0].toString();
+				count++;
+			} 
+			int less = 2 < times.size() ? 2 : times.size();
+			while(count < less) {
+				if(less - count == 1) {
+					result = result + " & ";
+				}else if(less > 3) {
+					result = result +", ";
+				}
+				result = result + timeArray[count];
+				count++;
+			}
+			
+			return result+" mins";
 		}
 
 		

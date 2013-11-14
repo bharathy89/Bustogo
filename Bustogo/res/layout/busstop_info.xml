@@ -2,8 +2,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="@drawable/infowindow1"
-    android:orientation="vertical" >
+    android:background="@drawable/infowindow"
+    android:orientation="vertical"
+    android:paddingBottom="25dp" >
 
     <LinearLayout
         android:layout_width="300dp"
@@ -83,11 +84,5 @@
         android:layout_marginLeft="2dp"
         android:layout_marginRight="2dp"
         android:background="#a1a1a1" />
-
-    <ListView
-        android:id="@+id/active_route_list"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" >
-    </ListView>
 
 </LinearLayout>
